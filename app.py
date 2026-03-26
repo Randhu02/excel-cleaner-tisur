@@ -185,6 +185,38 @@ def export_pdf():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+
+
+
+@app.route('/export_csv', methods=['POST'])
+def export_csv():
+    """Endpoint para exportar datos limpios a CSV"""
+    try:
+        if 'file' not in request.files:
+            return jsonify({'error': 'No se subió ningún archivo'}), 400
+        
+        file = request.files['file']
+        file_bytes = file.read()
+        df_clean, stats = clean_excel_data(file_bytes)
+        
+        # Exportar a CSV
+        output = io.StringIO()
+        df_clean.to_csv(output, index=False, encoding='utf-8-sig')
+        output.seek(0)
+        
+        return send_file(
+            io.BytesIO(output.getvalue().encode('utf-8-sig')),
+            mimetype='text/csv',
+            as_attachment=True,
+            download_name='USD_2026_limpio.csv'
+        )
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
     

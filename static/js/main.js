@@ -3,16 +3,38 @@ const uploadArea = document.getElementById('uploadArea');
 const fileInput = document.getElementById('fileInput');
 const fileInfo = document.getElementById('fileInfo');
 const fileName = document.getElementById('fileName');
+const fileSize = document.getElementById('fileSize');
 const clearFile = document.getElementById('clearFile');
 const previewBtn = document.getElementById('previewBtn');
 const cleanBtn = document.getElementById('cleanBtn');
 const exportPdfBtn = document.getElementById('exportPdfBtn');
+const exportCsvBtn = document.getElementById('exportCsvBtn');
 const loading = document.getElementById('loading');
 const statsCard = document.getElementById('statsCard');
 const previewCard = document.getElementById('previewCard');
 const result = document.getElementById('result');
+const progressBar = document.getElementById('progressBar');
 
 let selectedFile = null;
+
+// Mostrar fecha y hora actual
+function updateDateTime() {
+    const now = new Date();
+    const fecha = now.toLocaleDateString('es-ES', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+    });
+    const hora = now.toLocaleTimeString('es-ES');
+    
+    const fechaElem = document.getElementById('fechaActual');
+    const horaElem = document.getElementById('horaActual');
+    if (fechaElem) fechaElem.textContent = fecha;
+    if (horaElem) horaElem.textContent = hora;
+}
+
+setInterval(updateDateTime, 1000);
+updateDateTime();
 
 // Eventos de drag and drop
 uploadArea.addEventListener('click', () => fileInput.click());
@@ -46,11 +68,20 @@ fileInput.addEventListener('change', (e) => {
 function handleFile(file) {
     selectedFile = file;
     fileName.textContent = file.name;
+    
+    // Calcular tamaño del archivo
+    const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
+    fileSize.textContent = `${sizeInMB} MB`;
+    
     fileInfo.style.display = 'block';
     uploadArea.style.display = 'none';
-    previewBtn.disabled = false;
-    cleanBtn.disabled = false;
-    exportPdfBtn.disabled = false;
+    
+    // Habilitar botones
+    const buttons = [previewBtn, cleanBtn, exportPdfBtn, exportCsvBtn];
+    buttons.forEach(btn => {
+        if (btn) btn.disabled = false;
+    });
+    
     result.innerHTML = '';
     statsCard.style.display = 'none';
     previewCard.style.display = 'none';
@@ -60,14 +91,31 @@ clearFile.addEventListener('click', () => {
     selectedFile = null;
     fileInfo.style.display = 'none';
     uploadArea.style.display = 'block';
-    previewBtn.disabled = true;
-    cleanBtn.disabled = true;
-    exportPdfBtn.disabled = true;
+    
+    const buttons = [previewBtn, cleanBtn, exportPdfBtn, exportCsvBtn];
+    buttons.forEach(btn => {
+        if (btn) btn.disabled = true;
+    });
+    
     fileInput.value = '';
     result.innerHTML = '';
     statsCard.style.display = 'none';
     previewCard.style.display = 'none';
 });
+
+// Simular progreso
+function simulateProgress() {
+    let width = 0;
+    const interval = setInterval(() => {
+        if (width >= 90) {
+            clearInterval(interval);
+        } else {
+            width += 10;
+            if (progressBar) progressBar.style.width = width + '%';
+        }
+    }, 200);
+    return interval;
+}
 
 // Vista previa
 previewBtn.addEventListener('click', async () => {
@@ -75,6 +123,7 @@ previewBtn.addEventListener('click', async () => {
     
     previewBtn.disabled = true;
     loading.style.display = 'block';
+    const progressInterval = simulateProgress();
     
     const formData = new FormData();
     formData.append('file', selectedFile);
@@ -91,17 +140,19 @@ previewBtn.addEventListener('click', async () => {
             throw new Error(data.error || 'Error al obtener vista previa');
         }
         
-        // Mostrar estadísticas
+        if (progressBar) progressBar.style.width = '100%';
+        setTimeout(() => {
+            if (progressBar) progressBar.style.width = '0%';
+        }, 500);
+        
         displayStats(data.stats);
-        
-        // Mostrar vista previa
         displayPreview(data.preview);
-        
         showMessage('✅ Vista previa generada correctamente', 'success');
         
     } catch (error) {
         showMessage(`❌ Error: ${error.message}`, 'error');
     } finally {
+        clearInterval(progressInterval);
         previewBtn.disabled = false;
         loading.style.display = 'none';
     }
@@ -114,7 +165,9 @@ cleanBtn.addEventListener('click', async () => {
     cleanBtn.disabled = true;
     previewBtn.disabled = true;
     exportPdfBtn.disabled = true;
+    exportCsvBtn.disabled = true;
     loading.style.display = 'block';
+    const progressInterval = simulateProgress();
     
     const formData = new FormData();
     formData.append('file', selectedFile);
@@ -134,20 +187,27 @@ cleanBtn.addEventListener('click', async () => {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'USD_2026_limpio.xlsx';
+        a.download = `USD_2026_limpio_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.xlsx`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
+        
+        if (progressBar) progressBar.style.width = '100%';
+        setTimeout(() => {
+            if (progressBar) progressBar.style.width = '0%';
+        }, 500);
         
         showMessage('✅ Archivo procesado correctamente. ¡Descarga iniciada!', 'success');
         
     } catch (error) {
         showMessage(`❌ Error: ${error.message}`, 'error');
     } finally {
+        clearInterval(progressInterval);
         cleanBtn.disabled = false;
         previewBtn.disabled = false;
         exportPdfBtn.disabled = false;
+        exportCsvBtn.disabled = false;
         loading.style.display = 'none';
     }
 });
@@ -158,6 +218,7 @@ exportPdfBtn.addEventListener('click', async () => {
     
     exportPdfBtn.disabled = true;
     loading.style.display = 'block';
+    const progressInterval = simulateProgress();
     
     const formData = new FormData();
     formData.append('file', selectedFile);
@@ -177,21 +238,70 @@ exportPdfBtn.addEventListener('click', async () => {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'USD_2026_limpio.pdf';
+        a.download = `USD_2026_reporte_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.pdf`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
+        
+        if (progressBar) progressBar.style.width = '100%';
+        setTimeout(() => {
+            if (progressBar) progressBar.style.width = '0%';
+        }, 500);
         
         showMessage('✅ PDF generado correctamente. ¡Descarga iniciada!', 'success');
         
     } catch (error) {
         showMessage(`❌ Error: ${error.message}`, 'error');
     } finally {
+        clearInterval(progressInterval);
         exportPdfBtn.disabled = false;
         loading.style.display = 'none';
     }
 });
+
+// Exportar CSV (nueva funcionalidad)
+if (exportCsvBtn) {
+    exportCsvBtn.addEventListener('click', async () => {
+        if (!selectedFile) return;
+        
+        exportCsvBtn.disabled = true;
+        loading.style.display = 'block';
+        
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        
+        try {
+            const response = await fetch('/export_csv', {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Error al generar CSV');
+            }
+            
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `USD_2026_limpio_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            showMessage('✅ CSV generado correctamente. ¡Descarga iniciada!', 'success');
+            
+        } catch (error) {
+            showMessage(`❌ Error: ${error.message}`, 'error');
+        } finally {
+            exportCsvBtn.disabled = false;
+            loading.style.display = 'none';
+        }
+    });
+}
 
 function displayStats(stats) {
     const statsContent = document.getElementById('statsContent');
@@ -199,34 +309,40 @@ function displayStats(stats) {
     let html = `
         <div class="stats-grid">
             <div class="stat-card">
-                <h3>${stats.total_registros}</h3>
-                <p>Total Registros</p>
+                <i class="fas fa-database"></i>
+                <h3>${stats.total_registros || stats.registros_finales || 0}</h3>
+                <p>Total Registros Procesados</p>
             </div>
             <div class="stat-card">
-                <h3>${stats.total_columnas}</h3>
+                <i class="fas fa-columns"></i>
+                <h3>${stats.total_columnas || stats.columnas_finales || 0}</h3>
                 <p>Total Columnas</p>
             </div>
             <div class="stat-card">
-                <h3>${stats.registros_iniciales || stats.total_registros}</h3>
-                <p>Registros Iniciales</p>
+                <i class="fas fa-chart-line"></i>
+                <h3>${stats.registros_iniciales || stats.total_registros || 0}</h3>
+                <p>Registros Originales</p>
             </div>
         </div>
-        <h6><i class="fas fa-list"></i> Modificaciones Aplicadas:</h6>
+        <h6><i class="fas fa-list-check"></i> Modificaciones Aplicadas:</h6>
         <ul class="modifications-list">
     `;
     
-    if (stats.modificaciones) {
-        stats.modificaciones.forEach(mod => {
-            html += `<li>${mod}</li>`;
-        });
-    } else if (stats.resumen && stats.resumen.modificaciones) {
-        stats.resumen.modificaciones.forEach(mod => {
-            html += `<li>${mod}</li>`;
-        });
+    const modificaciones = stats.modificaciones || (stats.resumen && stats.resumen.modificaciones) || [];
+    modificaciones.forEach(mod => {
+        html += `<li>${mod}</li>`;
+    });
+    
+    if (modificaciones.length === 0) {
+        html += `<li class="text-muted">No se registraron modificaciones específicas</li>`;
     }
     
     html += `</ul>`;
-    html += `<hr><small class="text-muted">Columnas procesadas: ${stats.columnas ? stats.columnas.slice(0, 15).join(', ') : '...'}</small>`;
+    html += `<hr class="my-3">`;
+    html += `<small class="text-muted">
+        <i class="fas fa-clock"></i> Procesado el: ${new Date().toLocaleString('es-ES')}
+        <br><i class="fas fa-tag"></i> Columnas: ${(stats.columnas || []).slice(0, 10).join(', ')}${(stats.columnas || []).length > 10 ? '...' : ''}
+    </small>`;
     
     statsContent.innerHTML = html;
     statsCard.style.display = 'block';
@@ -236,7 +352,7 @@ function displayPreview(data) {
     const previewContent = document.getElementById('previewContent');
     
     if (!data || data.length === 0) {
-        previewContent.innerHTML = '<p class="text-muted">No hay datos para mostrar</p>';
+        previewContent.innerHTML = '<p class="text-muted text-center">No hay datos para mostrar</p>';
         previewCard.style.display = 'block';
         return;
     }
@@ -253,13 +369,17 @@ function displayPreview(data) {
     data.forEach(row => {
         html += '<tr>';
         columns.forEach(col => {
-            html += `<td>${row[col] || ''}</td>`;
+            let value = row[col] || '';
+            if (value.toString().length > 50) {
+                value = value.toString().substring(0, 50) + '...';
+            }
+            html += `<td title="${row[col] || ''}">${value}</td>`;
         });
         html += '</tr>';
     });
     
     html += '</tbody></table>';
-    html += `<p class="text-muted mt-2"><small>Mostrando primeras ${data.length} filas de ${data.length}+ registros</small></p>`;
+    html += `<p class="text-muted mt-2"><small><i class="fas fa-info-circle"></i> Mostrando primeras ${data.length} filas. El archivo completo tiene más registros.</small></p>`;
     
     previewContent.innerHTML = html;
     previewCard.style.display = 'block';

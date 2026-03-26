@@ -6,65 +6,130 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     min-height: 100vh;
+    background-image: url('/static/img/buque-de-carga-en-el-puerto-durante-la-puesta-del-sol.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    position: relative;
 }
 
+/* Overlay para mejorar legibilidad - más oscuro para mejor contraste */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%);
+    z-index: 0;
+}
+
+.container-fluid {
+    position: relative;
+    z-index: 1;
+}
+
+/* ========== VERDE PETRÓLEO ========== */
+/* Color principal: #1E4A47 (verde petróleo oscuro) */
+/* Color secundario: #2C6E6A (verde petróleo más claro) */
+/* Color acento: #3D8F8A (verde petróleo brillante) */
+
 .navbar {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    background: linear-gradient(135deg, #1E4A47 0%, #2C6E6A 100%) !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    backdrop-filter: blur(10px);
+}
+
+.navbar-brand {
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.navbar-brand i {
+    margin-right: 10px;
 }
 
 .container {
     max-width: 1400px;
 }
 
+/* ========== CARDS TRANSPARENTES ========== */
 .card {
     border: none;
-    border-radius: 12px;
+    border-radius: 16px;
+    backdrop-filter: blur(15px);
+    background: rgba(255, 255, 255, 0.85);
     transition: transform 0.3s, box-shadow 0.3s;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
 .card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    background: rgba(255, 255, 255, 0.92);
 }
 
+.card-header {
+    background: linear-gradient(135deg, #1E4A47 0%, #2C6E6A 100%);
+    color: white;
+    border: none;
+    padding: 15px 20px;
+}
+
+.card-header i {
+    margin-right: 10px;
+}
+
+/* Card de bienvenida con fondo más transparente */
+.card:first-of-type {
+    background: rgba(255, 255, 255, 0.75);
+}
+
+/* ========== ÁREA DE SUBIDA ========== */
 .upload-area {
-    border: 2px dashed #ccc;
+    border: 2px dashed #2C6E6A;
     border-radius: 12px;
     padding: 40px;
     text-align: center;
     cursor: pointer;
     transition: all 0.3s;
-    background: #fafafa;
+    background: rgba(255, 255, 255, 0.7);
 }
 
 .upload-area:hover, .upload-area.dragover {
-    border-color: #667eea;
-    background: #f0f0ff;
+    border-color: #3D8F8A;
+    background: rgba(255, 255, 255, 0.9);
+    transform: scale(1.02);
 }
 
 .upload-message i {
-    color: #667eea;
+    color: #1E4A47;
+    font-size: 48px;
 }
 
 .upload-message p {
-    color: #666;
+    color: #1E4A47;
     margin-bottom: 5px;
+    font-weight: 500;
 }
 
+/* ========== BOTONES CON VERDE PETRÓLEO ========== */
 .btn {
     border-radius: 8px;
     padding: 10px 24px;
     font-weight: 600;
     margin-right: 10px;
     transition: all 0.3s;
+    border: none;
 }
 
 .btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
 }
 
 .btn:disabled {
@@ -73,33 +138,115 @@ body {
     transform: none;
 }
 
+/* Botón Limpiar Excel - Verde petróleo principal */
 .btn-success {
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-    border: none;
+    background: linear-gradient(135deg, #1E4A47 0%, #2C6E6A 100%);
 }
 
+.btn-success:hover {
+    background: linear-gradient(135deg, #2C6E6A 0%, #3D8F8A 100%);
+}
+
+/* Botón Vista Previa - Verde petróleo más claro */
 .btn-info {
-    background: linear-gradient(135deg, #17a2b8 0%, #5bc0de 100%);
-    border: none;
+    background: linear-gradient(135deg, #2C6E6A 0%, #3D8F8A 100%);
 }
 
+.btn-info:hover {
+    background: linear-gradient(135deg, #3D8F8A 0%, #4FAFAA 100%);
+}
+
+/* Botón Exportar PDF - Rojo mantiene para destacar */
 .btn-danger {
     background: linear-gradient(135deg, #dc3545 0%, #ff6b6b 100%);
-    border: none;
 }
 
-#previewContent {
-    overflow-x: auto;
+/* Botón Exportar CSV - Verde petróleo con tono dorado */
+.btn-warning {
+    background: linear-gradient(135deg, #2C6E6A 0%, #4A7C78 100%);
+    color: white;
 }
 
+.btn-warning:hover {
+    background: linear-gradient(135deg, #3D8F8A 0%, #5C9C97 100%);
+    color: white;
+}
+
+/* ========== TARJETAS DE ESTADÍSTICAS ========== */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #1E4A47 0%, #2C6E6A 100%);
+    color: white;
+    padding: 25px;
+    border-radius: 16px;
+    text-align: center;
+    transition: transform 0.3s;
+    cursor: pointer;
+    backdrop-filter: blur(5px);
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    background: linear-gradient(135deg, #2C6E6A 0%, #3D8F8A 100%);
+}
+
+.stat-card i {
+    font-size: 40px;
+    margin-bottom: 15px;
+}
+
+.stat-card h3 {
+    font-size: 36px;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.stat-card p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 14px;
+}
+
+.modifications-list {
+    list-style: none;
+    padding: 0;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.modifications-list li {
+    padding: 10px 0;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    color: #1E4A47;
+}
+
+.modifications-list li:before {
+    content: "✓";
+    color: #2C6E6A;
+    margin-right: 12px;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+/* ========== TABLA DE VISTA PREVIA ========== */
 .preview-table {
     width: 100%;
     border-collapse: collapse;
     font-size: 12px;
+    border-radius: 8px;
+    overflow: hidden;
 }
 
 .preview-table th {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #1E4A47 0%, #2C6E6A 100%);
     color: white;
     padding: 12px;
     text-align: left;
@@ -112,71 +259,117 @@ body {
 .preview-table td {
     padding: 10px;
     border-bottom: 1px solid #e0e0e0;
+    background: rgba(255, 255, 255, 0.9);
 }
 
-.preview-table tr:hover {
-    background: #f5f5f5;
+.preview-table tr:hover td {
+    background: rgba(44, 110, 106, 0.1);
 }
 
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-    margin-bottom: 20px;
-}
-
-.stat-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 20px;
-    border-radius: 12px;
-    text-align: center;
-}
-
-.stat-card h3 {
-    font-size: 32px;
-    margin-bottom: 10px;
-}
-
-.stat-card p {
-    margin: 0;
-    opacity: 0.9;
-}
-
-.modifications-list {
-    list-style: none;
-    padding: 0;
-}
-
-.modifications-list li {
-    padding: 8px 0;
-    border-bottom: 1px solid #e0e0e0;
-}
-
-.modifications-list li:before {
-    content: "✓";
-    color: #28a745;
-    margin-right: 10px;
-    font-weight: bold;
-}
-
+/* ========== ALERTAS Y MENSAJES ========== */
 .alert-success {
-    background: #d4edda;
-    color: #155724;
+    background: rgba(30, 74, 71, 0.9);
+    color: white;
     border: none;
-    border-radius: 8px;
+    border-radius: 12px;
+    backdrop-filter: blur(5px);
 }
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+.alert-danger {
+    background: rgba(220, 53, 69, 0.9);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    backdrop-filter: blur(5px);
 }
 
+/* ========== FILE INFO ========== */
+.file-info .alert-success {
+    background: rgba(30, 74, 71, 0.95);
+}
+
+/* ========== SPINNER ========== */
 .spinner-border {
     width: 3rem;
     height: 3rem;
+    color: #2C6E6A !important;
 }
 
+/* ========== PROGRESS BAR ========== */
+.progress-custom {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+.progress-bar-custom {
+    height: 100%;
+    background: linear-gradient(90deg, #1E4A47, #3D8F8A);
+    width: 0%;
+    transition: width 0.3s;
+    border-radius: 2px;
+}
+
+/* ========== BADGES ========== */
+.badge-primary {
+    background: #1E4A47;
+    color: white;
+}
+
+.badge-success {
+    background: #2C6E6A;
+    color: white;
+}
+
+.badge-info {
+    background: #3D8F8A;
+    color: white;
+}
+
+/* ========== ANIMACIONES ========== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* ========== SCROLLBAR ========== */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #1E4A47 0%, #2C6E6A 100%);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #3D8F8A;
+}
+
+/* ========== FOOTER ========== */
+footer {
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+/* ========== RESPONSIVE ========== */
 @media (max-width: 768px) {
     .btn {
         width: 100%;
@@ -194,4 +387,34 @@ body {
     .preview-table th, .preview-table td {
         padding: 6px;
     }
+    
+    .card-header h5 {
+        font-size: 16px;
+    }
+}
+
+/* ========== TOOLTIPS ========== */
+[data-tooltip] {
+    position: relative;
+    cursor: help;
+}
+
+[data-tooltip]:before {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 5px 10px;
+    background: rgba(30, 74, 71, 0.95);
+    color: white;
+    border-radius: 5px;
+    font-size: 12px;
+    white-space: nowrap;
+    display: none;
+    z-index: 1000;
+}
+
+[data-tooltip]:hover:before {
+    display: block;
 }
