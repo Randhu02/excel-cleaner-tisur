@@ -4,6 +4,7 @@ const fileInput = document.getElementById('fileInput');
 const fileInfo = document.getElementById('fileInfo');
 const fileName = document.getElementById('fileName');
 const fileSize = document.getElementById('fileSize');
+const fileTypeBadge = document.getElementById('fileTypeBadge');
 const clearFile = document.getElementById('clearFile');
 const previewBtn = document.getElementById('previewBtn');
 const cleanBtn = document.getElementById('cleanBtn');
@@ -15,7 +16,12 @@ const previewCard = document.getElementById('previewCard');
 const result = document.getElementById('result');
 const progressBar = document.getElementById('progressBar');
 
+// Selectores de tipo de archivo
+const radioUSD = document.getElementById('typeUSD');
+const radioTM = document.getElementById('typeTM');
+
 let selectedFile = null;
+let selectedFileType = 'usd'; // por defecto USD
 
 // Mostrar fecha y hora actual
 function updateDateTime() {
@@ -35,6 +41,34 @@ function updateDateTime() {
 
 setInterval(updateDateTime, 1000);
 updateDateTime();
+
+// Evento para cambiar tipo de archivo
+if (radioUSD) {
+    radioUSD.addEventListener('change', () => {
+        selectedFileType = 'usd';
+        if (selectedFile) {
+            updateFileTypeBadge();
+        }
+    });
+}
+if (radioTM) {
+    radioTM.addEventListener('change', () => {
+        selectedFileType = 'tm';
+        if (selectedFile) {
+            updateFileTypeBadge();
+        }
+    });
+}
+
+function updateFileTypeBadge() {
+    if (selectedFileType === 'usd') {
+        fileTypeBadge.textContent = 'USD 2026';
+        fileTypeBadge.className = 'badge bg-success ms-2';
+    } else {
+        fileTypeBadge.textContent = 'TM 2026';
+        fileTypeBadge.className = 'badge bg-info ms-2';
+    }
+}
 
 // Eventos de drag and drop
 uploadArea.addEventListener('click', () => fileInput.click());
@@ -72,6 +106,8 @@ function handleFile(file) {
     // Calcular tamaño del archivo
     const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
     fileSize.textContent = `${sizeInMB} MB`;
+    
+    updateFileTypeBadge();
     
     fileInfo.style.display = 'block';
     uploadArea.style.display = 'none';
@@ -127,6 +163,7 @@ previewBtn.addEventListener('click', async () => {
     
     const formData = new FormData();
     formData.append('file', selectedFile);
+    formData.append('file_type', selectedFileType);
     
     try {
         const response = await fetch('/preview', {
@@ -171,6 +208,7 @@ cleanBtn.addEventListener('click', async () => {
     
     const formData = new FormData();
     formData.append('file', selectedFile);
+    formData.append('file_type', selectedFileType);
     
     try {
         const response = await fetch('/clean', {
@@ -187,7 +225,8 @@ cleanBtn.addEventListener('click', async () => {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `USD_2026_limpio_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.xlsx`;
+        const filePrefix = selectedFileType === 'usd' ? 'USD' : 'TM';
+        a.download = `${filePrefix}_2026_limpio_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.xlsx`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -222,6 +261,7 @@ exportPdfBtn.addEventListener('click', async () => {
     
     const formData = new FormData();
     formData.append('file', selectedFile);
+    formData.append('file_type', selectedFileType);
     
     try {
         const response = await fetch('/export_pdf', {
@@ -238,7 +278,8 @@ exportPdfBtn.addEventListener('click', async () => {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `USD_2026_reporte_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.pdf`;
+        const filePrefix = selectedFileType === 'usd' ? 'USD' : 'TM';
+        a.download = `${filePrefix}_2026_reporte_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.pdf`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -260,7 +301,7 @@ exportPdfBtn.addEventListener('click', async () => {
     }
 });
 
-// Exportar CSV (nueva funcionalidad)
+// Exportar CSV
 if (exportCsvBtn) {
     exportCsvBtn.addEventListener('click', async () => {
         if (!selectedFile) return;
@@ -270,6 +311,7 @@ if (exportCsvBtn) {
         
         const formData = new FormData();
         formData.append('file', selectedFile);
+        formData.append('file_type', selectedFileType);
         
         try {
             const response = await fetch('/export_csv', {
@@ -286,7 +328,8 @@ if (exportCsvBtn) {
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `USD_2026_limpio_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.csv`;
+            const filePrefix = selectedFileType === 'usd' ? 'USD' : 'TM';
+            a.download = `${filePrefix}_2026_limpio_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.csv`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -341,7 +384,8 @@ function displayStats(stats) {
     html += `<hr class="my-3">`;
     html += `<small class="text-muted">
         <i class="fas fa-clock"></i> Procesado el: ${new Date().toLocaleString('es-ES')}
-        <br><i class="fas fa-tag"></i> Columnas: ${(stats.columnas || []).slice(0, 10).join(', ')}${(stats.columnas || []).length > 10 ? '...' : ''}
+        <br><i class="fas fa-tag"></i> Tipo: ${stats.tipo_archivo || (stats.tipo_archivo === 'USD' ? 'USD 2026' : 'TM 2026')}
+        <br><i class="fas fa-columns"></i> Columnas: ${(stats.columnas || []).slice(0, 10).join(', ')}${(stats.columnas || []).length > 10 ? '...' : ''}
     </small>`;
     
     statsContent.innerHTML = html;
@@ -364,7 +408,7 @@ function displayPreview(data) {
     columns.forEach(col => {
         html += `<th>${col}</th>`;
     });
-    html += '</tr></thead><tbody>';
+    html += '</thead><tbody>';
     
     data.forEach(row => {
         html += '<tr>';
