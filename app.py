@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, send_file, jsonify
+from flask import Flask, request, render_template, send_file, jsonify, session, redirect, url_for
 from flask_cors import CORS
 import pandas as pd
 import io
@@ -8,6 +8,7 @@ import tempfile
 import plotly.graph_objs as go
 import plotly.utils
 import json
+from functools import wraps
 
 # Importar el módulo de limpieza unificado
 from utils.cleaner import clean_excel_data, detect_file_type
@@ -15,13 +16,50 @@ from utils.cleaner import clean_excel_data, detect_file_type
 app = Flask(__name__)
 CORS(app)
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB max
-app.config['SECRET_KEY'] = 'tu-clave-secreta-aqui'
+app.config['SECRET_KEY'] = 'tu-clave-secreta-aqui-cambiala-en-produccion'
+
+# Credenciales (en producción, usa base de datos)
+USUARIO_VALIDO = "finanza_tisur"
+CONTRASENA_VALIDA = "123456"
+
+# Decorador para requerir login
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'logged_in' not in session or not session['logged_in']:
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    """Página de inicio de sesión"""
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        if username == USUARIO_VALIDO and password == CONTRASENA_VALIDA:
+            session['logged_in'] = True
+            session['username'] = username
+            return redirect(url_for('index'))
+        else:
+            return render_template('login.html', error="Usuario o contraseña incorrectos")
+    
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    """Cerrar sesión"""
+    session.clear()
+    return redirect(url_for('login'))
 
 @app.route('/')
+@login_required
 def index():
     return render_template('index.html')
 
 @app.route('/clean', methods=['POST'])
+@login_required
 def clean_excel():
     """Endpoint para limpiar el Excel y devolver el archivo procesado"""
     try:
@@ -70,6 +108,7 @@ def clean_excel():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/preview', methods=['POST'])
+@login_required
 def preview_data():
     """Endpoint para obtener vista previa de los datos limpios"""
     try:
@@ -115,6 +154,7 @@ def preview_data():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/export_pdf', methods=['POST'])
+@login_required
 def export_pdf():
     """Endpoint para exportar datos limpios a PDF"""
     try:
@@ -221,6 +261,7 @@ def export_pdf():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/export_csv', methods=['POST'])
+@login_required
 def export_csv():
     """Endpoint para exportar datos limpios a CSV"""
     try:
